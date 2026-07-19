@@ -155,11 +155,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+    <script src="config.js"></script>
+
     <script>
         // Initialize EmailJS with your Public Key
         // CRITICAL: Replace "YOUR_PUBLIC_KEY" with the key from your EmailJS Account
         emailjs.init({
-          publicKey: "IFY53T3g2b-pf--cX",
+          publicKey: EMAILJS_PUBLIC_KEY,
         });
 
         let currentBookingData = {};
@@ -222,7 +224,7 @@
             try {
                 // Send the email completely free via EmailJS
                 // CRITICAL: Replace "YOUR_SERVICE_ID" and "YOUR_TEMPLATE_ID"
-                const response = await emailjs.send('service_0acmy5g', 'template_kdz5zcg', templateParams);
+                const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 
                 if (response.status === 200) {
                     document.getElementById('review-modal').style.display = 'none';
@@ -254,7 +256,7 @@
             // Send the final summary data to YOUR inbox using a second EmailJS template, 
             // or keep using your free Web3Forms endpoint key below since Web3Forms alerts YOU for free!
             const adminPayload = {
-                access_key: "6a34d81f-bad6-4835-9787-05a3a4a1ef9f", 
+                access_key: WEB3FORMS_KEY", 
                 subject: "New Verified Booking: " + currentBookingData.name,
                 "Client Name": currentBookingData.name,
                 "Client Email": currentBookingData.email,
