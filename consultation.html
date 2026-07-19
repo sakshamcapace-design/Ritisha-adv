@@ -148,9 +148,15 @@
                     <textarea id="message" rows="4" placeholder="How can we assist you?" required></textarea>
                 </div>
                 
-                <div class="form-group" style="background: var(--light-gray); padding: 15px; border: 1px solid var(--border-color); color: var(--black) !important;">
-                    <label id="captcha-label" for="captcha-input" style="color: var(--black) !important; font-weight: bold;">Security Check: Loading challenge...</label>
-                    <input type="text" id="captcha-input" placeholder="Enter the answer" required style="color: var(--dark-gray) !important; background: var(--white) !important; margin-top: 5px;">
+                <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+                <div class="form-group" style="background: var(--light-gray); padding: 15px; border: 1px solid var(--border-color);">
+                    <label style="color: var(--black) !important; font-weight: bold; display: block; margin-bottom: 8px;">Security Verification:</label>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <canvas id="captcha-canvas" width="140" height="45" style="border: 1px solid var(--border-color); background: #eee;"></canvas>
+                        <button type="button" class="agree-btn" style="padding: 10px 15px; width: auto; font-size: 0.8rem;" onclick="generateCanvasCaptcha()">🔄</button>
+                    </div>
+                    <input type="text" id="captcha-input" placeholder="Enter the code shown above" required style="color: var(--dark-gray) !important; background: var(--white) !important;">
                 </div>
 
                 <button type="submit" class="agree-btn">Book Appointment</button>
@@ -163,14 +169,14 @@
     </footer>
 
    <script>
-        // Defensive check: Initialize EmailJS safely without freezing the page if config.js is missing
+        // Securely initialize EmailJS
         try {
             if (typeof APP_CONFIG !== 'undefined') {
                 emailjs.init({
                     publicKey: APP_CONFIG.EMAILJS_PUBLIC_KEY,
                 });
             } else {
-                console.warn("Configuration Warning: 'APP_CONFIG' object not found. Check your config.js file configuration.");
+                console.warn("Configuration Warning: 'APP_CONFIG' object not found.");
             }
         } catch (initError) {
             console.error("EmailJS failed to initialize:", initError);
@@ -178,32 +184,66 @@
 
         let currentBookingData = {};
         let generatedOTP = "";
-        let captchaAnswer = 0; 
+        let secureCaptchaText = ""; // Stores the correct visual captcha string
 
-        // CAPTCHA Generator Function
-        function generateCaptcha() {
-            try {
-                const num1 = Math.floor(Math.random() * 10) + 1;
-                const num2 = Math.floor(Math.random() * 10) + 1;
-                captchaAnswer = num1 + num2;
-                
-                const label = document.getElementById('captcha-label');
-                if (label) {
-                    label.innerText = `Security Check: What is ${num1} + ${num2}?`;
-                }
-                
-                const input = document.getElementById('captcha-input');
-                if (input) {
-                    input.value = '';
-                }
-            } catch (captchaError) {
-                console.error("Error generating text CAPTCHA:", captchaError);
+        // Advanced Canvas CAPTCHA Generator
+        function generateCanvasCaptcha() {
+            const canvas = document.getElementById('captcha-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Clear previous drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Generate a random 5-character alphanumeric string (excluding confusing characters like 0/O)
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+            secureCaptchaText = "";
+            for (let i = 0; i < 5; i++) {
+                secureCaptchaText += chars.charAt(Math.floor(Math.random() * chars.length));
             }
+            
+            // Style the canvas background with subtle grid lines to confuse basic scanners
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw random noise lines across the text zone
+            for (let i = 0; i < 6; i++) {
+                ctx.strokeStyle = `rgba(${Math.floor(Math.random()*150)}, ${Math.floor(Math.random()*150)}, ${Math.floor(Math.random()*150)}, 0.4)`;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.stroke();
+            }
+            
+            // Render the text characters with individual rotation and scaling variations
+            ctx.font = "bold 24px 'Georgia', serif";
+            ctx.textBaseline = "middle";
+            
+            for (let i = 0; i < secureCaptchaText.length; i++) {
+                const char = secureCaptchaText[i];
+                ctx.fillStyle = `rgb(${Math.floor(Math.random()*100)}, ${Math.floor(Math.random()*100)}, ${Math.floor(Math.random()*100)})`;
+                
+                // Add distortion: slight shifts in height and slight angle tilts
+                const xPos = 15 + (i * 24);
+                const yPos = 20 + (Math.random() * 10);
+                const angle = (Math.random() * 20 - 10) * Math.PI / 180; // Up to 10 degree tilt
+                
+                ctx.save();
+                ctx.translate(xPos, yPos);
+                ctx.rotate(angle);
+                ctx.fillText(char, 0, 0);
+                ctx.restore();
+            }
+            
+            // Wipe out input box data on refresh
+            const input = document.getElementById('captcha-input');
+            if (input) input.value = '';
         }
 
         window.onload = function() {
-            // Generate the first CAPTCHA safely
-            generateCaptcha();
+            // Render the complex graphic captcha instantly on boot
+            generateCanvasCaptcha();
 
             if (!sessionStorage.getItem('disclaimerAccepted')) {
                 document.getElementById('disclaimer-modal').style.display = 'flex';
@@ -227,10 +267,11 @@
         function handleFormSubmit(event) {
             event.preventDefault();
             
-            const userAnswer = parseInt(document.getElementById('captcha-input').value);
-            if (userAnswer !== captchaAnswer) {
-                alert("Incorrect security CAPTCHA answer. Please try again.");
-                generateCaptcha(); 
+            // Validate Canvas CAPTCHA (case-sensitive to make it tougher for brute force)
+            const userAnswer = document.getElementById('captcha-input').value.trim();
+            if (userAnswer !== secureCaptchaText) {
+                alert("Security code verification failed. Letters are case-sensitive. Please try again.");
+                generateCanvasCaptcha(); 
                 return;
             }
             
@@ -257,7 +298,7 @@
 
         async function confirmBooking() {
             if (typeof APP_CONFIG === 'undefined') {
-                alert("Configuration Error: Cannot send email because setup keys are missing locally.");
+                alert("Configuration Error: Missing setup keys.");
                 return;
             }
 
@@ -308,6 +349,9 @@
                 return;
             }
 
+            // Web3Forms automatically drops submissions if the hidden "botcheck" element is checked
+            const isBotDetected = document.querySelector('input[name="botcheck"]').checked;
+
             const adminPayload = {
                 access_key: APP_CONFIG.WEB3FORMS_KEY, 
                 subject: "New Verified Booking: " + currentBookingData.name,
@@ -317,6 +361,11 @@
                 "Matter Description": currentBookingData.message,
                 "Verification Status": "Passed (OTP Email Verified)"
             };
+
+            // If a script manually triggered the hidden honeypot checkbox, pass it to Web3Forms to trigger the silent drop
+            if (isBotDetected) {
+                adminPayload.botcheck = true;
+            }
 
             try {
                 const response = await fetch('https://api.web3forms.com/submit', {
@@ -341,7 +390,7 @@
             document.body.style.overflow = 'auto';
             document.getElementById('user-otp-input').value = ""; 
             document.getElementById('appointment-form').reset();
-            generateCaptcha(); 
+            generateCanvasCaptcha(); // Refreshes the secure visual grid for the next form entry
         }
     </script>
 </body>
