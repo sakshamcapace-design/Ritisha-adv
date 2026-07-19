@@ -148,9 +148,9 @@
                     <textarea id="message" rows="4" placeholder="How can we assist you?" required></textarea>
                 </div>
                 
-                <div class="form-group" style="background: var(--light-gray); padding: 15px; border: 1px solid var(--border-color);">
-                    <label id="captcha-label" for="captcha-input">Security Check:</label>
-                    <input type="text" id="captcha-input" placeholder="Enter the answer" required>
+                <div class="form-group" style="background: var(--light-gray); padding: 15px; border: 1px solid var(--border-color); color: var(--black) !important;">
+                    <label id="captcha-label" for="captcha-input" style="color: var(--black) !important; font-weight: bold;">Security Check: Loading challenge...</label>
+                    <input type="text" id="captcha-input" placeholder="Enter the answer" required style="color: var(--dark-gray) !important; background: var(--white) !important; margin-top: 5px;">
                 </div>
 
                 <button type="submit" class="agree-btn">Book Appointment</button>
@@ -163,26 +163,46 @@
     </footer>
 
    <script>
-        // FIXED: Properly pointing to the APP_CONFIG object from your config.js file
-        emailjs.init({
-            publicKey: APP_CONFIG.EMAILJS_PUBLIC_KEY,
-        });
+        // Defensive check: Initialize EmailJS safely without freezing the page if config.js is missing
+        try {
+            if (typeof APP_CONFIG !== 'undefined') {
+                emailjs.init({
+                    publicKey: APP_CONFIG.EMAILJS_PUBLIC_KEY,
+                });
+            } else {
+                console.warn("Configuration Warning: 'APP_CONFIG' object not found. Check your config.js file configuration.");
+            }
+        } catch (initError) {
+            console.error("EmailJS failed to initialize:", initError);
+        }
 
         let currentBookingData = {};
         let generatedOTP = "";
-        let captchaAnswer = 0; // Stores the active captcha answer
+        let captchaAnswer = 0; 
 
         // CAPTCHA Generator Function
         function generateCaptcha() {
-            const num1 = Math.floor(Math.random() * 10) + 1;
-            const num2 = Math.floor(Math.random() * 10) + 1;
-            captchaAnswer = num1 + num2;
-            document.getElementById('captcha-label').innerText = `Security Check: What is ${num1} + ${num2}?`;
-            document.getElementById('captcha-input').value = '';
+            try {
+                const num1 = Math.floor(Math.random() * 10) + 1;
+                const num2 = Math.floor(Math.random() * 10) + 1;
+                captchaAnswer = num1 + num2;
+                
+                const label = document.getElementById('captcha-label');
+                if (label) {
+                    label.innerText = `Security Check: What is ${num1} + ${num2}?`;
+                }
+                
+                const input = document.getElementById('captcha-input');
+                if (input) {
+                    input.value = '';
+                }
+            } catch (captchaError) {
+                console.error("Error generating text CAPTCHA:", captchaError);
+            }
         }
 
         window.onload = function() {
-            // Generate the first CAPTCHA on page load
+            // Generate the first CAPTCHA safely
             generateCaptcha();
 
             if (!sessionStorage.getItem('disclaimerAccepted')) {
@@ -200,19 +220,17 @@
         }
 
         function rejectDisclaimer() {
-            // Replaces the entire page with a simple access denied message
-            document.body.innerHTML = '<div style="display: flex; height: 100vh; justify-content: center; align-items: center; text-align: center; padding: 20px;"><div><h1 style="margin-bottom: 20px;">Access Denied</h1><p>You must agree to the Bar Council of India disclaimer to view this website.</p></div></div>';
+            document.body.innerHTML = '<div style="display: flex; height: 100vh; justify-content: center; align-items: center; text-align: center; padding: 20px;"><div><h1 style="margin-bottom: 20px; color: #000;">Access Denied</h1><p style="color: #333;">You must agree to the Bar Council of India disclaimer to view this website.</p></div></div>';
             document.body.style.overflow = 'hidden';
         }
 
         function handleFormSubmit(event) {
             event.preventDefault();
             
-            // Validate the CAPTCHA before doing anything else
             const userAnswer = parseInt(document.getElementById('captcha-input').value);
             if (userAnswer !== captchaAnswer) {
                 alert("Incorrect security CAPTCHA answer. Please try again.");
-                generateCaptcha(); // Generate a new one to prevent spamming the old one
+                generateCaptcha(); 
                 return;
             }
             
@@ -238,6 +256,11 @@
         }
 
         async function confirmBooking() {
+            if (typeof APP_CONFIG === 'undefined') {
+                alert("Configuration Error: Cannot send email because setup keys are missing locally.");
+                return;
+            }
+
             const confirmBtn = document.querySelector('#review-modal .agree-btn:nth-child(2)');
             confirmBtn.innerText = "Sending Code...";
             confirmBtn.disabled = true;
@@ -251,7 +274,6 @@
             };
 
             try {
-                // FIXED: Pointing to APP_CONFIG
                 const response = await emailjs.send(APP_CONFIG.EMAILJS_SERVICE_ID, APP_CONFIG.EMAILJS_TEMPLATE_ID, templateParams);
 
                 if (response.status === 200) {
@@ -281,8 +303,13 @@
         }
 
         async function sendConsultationDataToAdmin() {
+            if (typeof APP_CONFIG === 'undefined') {
+                alert("Configuration Error: Web3Forms key missing.");
+                return;
+            }
+
             const adminPayload = {
-                access_key: APP_CONFIG.WEB3FORMS_KEY, // FIXED: Pointing to APP_CONFIG
+                access_key: APP_CONFIG.WEB3FORMS_KEY, 
                 subject: "New Verified Booking: " + currentBookingData.name,
                 "Client Name": currentBookingData.name,
                 "Client Email": currentBookingData.email,
@@ -314,7 +341,7 @@
             document.body.style.overflow = 'auto';
             document.getElementById('user-otp-input').value = ""; 
             document.getElementById('appointment-form').reset();
-            generateCaptcha(); // Generate a fresh CAPTCHA for the next person
+            generateCaptcha(); 
         }
     </script>
 </body>
