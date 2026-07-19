@@ -3,84 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insights | Ritisha Mathur</title>
+    <title>Ritisha Mathur | Advocate</title>
     <style>
         :root {
-            --black: #000000; --dark-gray: #333333; --mid-gray: #888888; --light-gray: #F4F4F4; --white: #FFFFFF; --border-color: #E0E0E0;
-            --font-heading: 'Georgia', 'Times New Roman', Times, serif; --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --black: #000000;
+            --dark-gray: #333333;
+            --mid-gray: #888888;
+            --light-gray: #F4F4F4;
+            --white: #FFFFFF;
+            --border-color: #E0E0E0;
+            --font-heading: 'Georgia', 'Times New Roman', Times, serif;
+            --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { color: var(--dark-gray); line-height: 1.7; background-color: var(--white); font-family: var(--font-body); padding-top: 80px; }
-        h2, h3 { font-family: var(--font-heading); font-weight: normal; color: var(--black); }
+        h1 { font-family: var(--font-heading); font-weight: normal; color: var(--black); }
         
+        /* Navigation */
         nav { background-color: var(--white); padding: 1.5rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid var(--border-color); height: 80px; }
-        .logo { color: var(--black); font-size: 1.4rem; font-family: var(--font-heading); text-decoration: none; letter-spacing: 2px; text-transform: uppercase; }
-        .nav-links a { color: var(--dark-gray); text-decoration: none; margin-left: 2.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .logo { display: flex; align-items: center; gap: 10px; color: var(--black); font-size: 1.4rem; font-family: var(--font-heading); text-decoration: none; letter-spacing: 2px; text-transform: uppercase; }
+        .logo img { height: 40px; width: auto; }
+        .nav-links a { color: var(--dark-gray); text-decoration: none; margin-left: 2.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s; }
         .nav-links a:hover, .nav-links a.active { color: var(--black); font-weight: bold; }
 
-        section { padding: 6rem 10%; min-height: calc(100vh - 80px); }
-        .section-title { text-align: center; font-size: 2.2rem; margin-bottom: 4rem; text-transform: uppercase; letter-spacing: 3px; }
-        .section-title::after { content: ''; display: block; width: 40px; height: 1px; background: var(--black); margin: 20px auto 0; }
-        
-        .news-item { padding: 2rem 0; border-bottom: 1px solid var(--border-color); }
-        .news-item:first-of-type { border-top: 1px solid var(--border-color); }
-        .news-date { color: var(--mid-gray); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.5rem; }
-        
-        .news-title { font-size: 1.4rem; margin: 0.5rem 0 1rem 0; }
-        .news-title a { text-decoration: none; color: var(--black); transition: color 0.3s; }
-        .news-title a:hover { color: var(--mid-gray); }
-        
-        footer { background: var(--black); color: var(--mid-gray); text-align: center; padding: 2rem; font-size: 0.8rem; }
+        /* Hero Section */
+        #home { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('mainpage.jpeg') center/cover; height: calc(100vh - 80px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--white); padding: 0 20px; filter: grayscale(100%); }
+        .hero-title { font-size: 4rem; margin-bottom: 1rem; color: var(--white); letter-spacing: 1px; }
+        .hero-subtitle { font-size: 1.2rem; max-width: 700px; margin-bottom: 3rem; font-weight: 300; color: #CCCCCC; }
+        .btn { padding: 14px 36px; background-color: transparent; color: var(--white); text-decoration: none; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--white); transition: all 0.3s ease; }
+        .btn:hover { background-color: var(--white); color: var(--black); }
+
+        /* Disclaimer Modal */
+        #disclaimer-modal { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .disclaimer-content { background: var(--white); padding: 50px; max-width: 700px; text-align: left; border: 1px solid var(--dark-gray); }
+        .disclaimer-content h2 { font-family: var(--font-heading); font-weight: normal; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .disclaimer-content p, .disclaimer-content li { font-size: 0.95rem; margin-bottom: 12px; }
+        .disclaimer-content ul { margin-bottom: 25px; margin-left: 20px; }
+        .agree-btn { background: var(--black); color: var(--white); border: 1px solid var(--black); padding: 14px 24px; cursor: pointer; width: 100%; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s; }
+        .agree-btn:hover { background: var(--white); color: var(--black); }
+
+        footer { background: var(--black); color: var(--mid-gray); text-align: center; padding: 2rem; font-size: 0.8rem; letter-spacing: 1px; }
     </style>
 </head>
 <body>
+
+    <div id="disclaimer-modal">
+        <div class="disclaimer-content">
+            <h2>Disclaimer & Confirmation</h2>
+            <p>As per the rules of the Bar Council of India, we are not permitted to solicit work and advertise. By clicking "I Agree", the user acknowledges the following:</p>
+            <ul>
+                <li>There has been no advertisement, personal communication, solicitation, or invitation from us to solicit work through this website.</li>
+                <li>The user wishes to gain more information about Advocate Ritisha Mathur for their own use.</li>
+                <li>The information is provided solely at the user's request and volition.</li>
+            </ul>
+            <button class="agree-btn" onclick="acceptDisclaimer()">I Agree</button>
+        </div>
+    </div>
+
     <nav>
-        <a href="index.html" class="logo">Chambers Of Advocate Ritisha Mathur</a>
+        <a href="index.html" class="logo">
+            Chambers Of Advocate Ritisha Mathur
+        </a>
         <div class="nav-links">
-            <a href="index.html">Home</a>
+            <a href="index.html" class="active">Home</a>
             <a href="profile.html">Profile</a>
             <a href="practice.html">Practice</a>
-            <a href="insights.html" class="active">Insights</a>
+            <a href="insights.html">Insights</a>
             <a href="contact.html">Contact</a>
         </div>
     </nav>
 
-    <section id="insights">
-        <h2 class="section-title">Insights & Developments</h2>
-        
-        <div id="blog-container"></div>
-        
+    <section id="home">
+        <h1 class="hero-title">Leading within the law.</h1>
+        <p class="hero-subtitle">Crafting strategic, commercially considered, and precise legal solutions across New Delhi.</p>
+        <a href="consultation.html" class="btn">Schedule a Consultation</a>
     </section>
 
-    <footer><p>&copy; 2026 Ritisha Mathur, Advocate. All Rights Reserved.</p></footer>
+    <footer>
+        <p>&copy; 2026 Ritisha Mathur, Advocate. All Rights Reserved.</p>
+    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fetch the data from the single document
-            fetch('blogs.json')
-                .then(response => response.json())
-                .then(blogs => {
-                    const container = document.getElementById('blog-container');
-                    
-                    // Loop through each blog and create the HTML structure
-                    blogs.forEach(blog => {
-                        const item = document.createElement('div');
-                        item.className = 'news-item';
-                        
-                        item.innerHTML = `
-                            <span class="news-date">${blog.date}</span>
-                            <h3 class="news-title"><a href="${blog.link}">${blog.title}</a></h3>
-                            <p>${blog.description}</p>
-                        `;
-                        
-                        container.appendChild(item);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading the blogs:', error);
-                    document.getElementById('blog-container').innerHTML = '<p>Error loading insights. Please try again later.</p>';
-                });
-        });
+        window.onload = function() {
+            if (!sessionStorage.getItem('disclaimerAccepted')) {
+                document.getElementById('disclaimer-modal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.getElementById('disclaimer-modal').style.display = 'none';
+            }
+        };
+        function acceptDisclaimer() {
+            sessionStorage.setItem('disclaimerAccepted', 'true');
+            document.getElementById('disclaimer-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
     </script>
 </body>
 </html>
