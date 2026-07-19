@@ -21,7 +21,8 @@
         
         /* Navigation */
         nav { background-color: var(--white); padding: 1.5rem 5%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; border-bottom: 1px solid var(--border-color); height: 80px; }
-        .logo { color: var(--black); font-size: 1.4rem; font-family: var(--font-heading); text-decoration: none; letter-spacing: 2px; text-transform: uppercase; }
+        .logo { display: flex; align-items: center; gap: 10px; color: var(--black); font-size: 1.4rem; font-family: var(--font-heading); text-decoration: none; letter-spacing: 2px; text-transform: uppercase; }
+        .logo img { height: 40px; width: auto; }
         .nav-links a { color: var(--dark-gray); text-decoration: none; margin-left: 2.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s; }
         .nav-links a:hover, .nav-links a.active { color: var(--black); font-weight: bold; }
 
@@ -60,7 +61,9 @@
     </div>
 
     <nav>
-        <a href="index.html" class="logo">Chambers Of Advocate Ritisha Mathur</a>
+        <a href="index.html" class="logo">
+            Chambers Of Advocate Ritisha Mathur
+        </a>
         <div class="nav-links">
             <a href="index.html" class="active">Home</a>
             <a href="profile.html">Profile</a>
