@@ -37,9 +37,9 @@
         .form-group input:focus, .form-group textarea:focus { outline: 1px solid var(--black); }
 
         /* Disclaimer & Confirmation Modals */
-        #disclaimer-modal, #confirmation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        #disclaimer-modal, #confirmation-modal, #review-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         #disclaimer-modal { display: flex; }
-        #confirmation-modal { display: none; }
+        #confirmation-modal, #review-modal { display: none; }
         
         .disclaimer-content { background: var(--white); padding: 50px; max-width: 700px; text-align: left; border: 1px solid var(--dark-gray); color: var(--dark-gray); }
         .disclaimer-content h2 { font-family: var(--font-heading); font-weight: normal; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--black); }
@@ -67,11 +67,39 @@
         </div>
     </div>
 
+    <div id="review-modal">
+        <div class="disclaimer-content" style="max-width: 500px;">
+            <h2>Review Your Details</h2>
+            <div style="margin-bottom: 25px; font-size: 0.95rem; line-height: 1.8;">
+                <p><strong>Full Name:</strong> <span id="review-name"></span></p>
+                <p><strong>Email Address:</strong> <span id="review-email"></span></p>
+                <p><strong>Phone Number:</strong> <span id="review-phone"></span></p>
+                <p><strong>Description:</strong></p>
+                <p id="review-message" style="background: var(--light-gray); padding: 10px; border: 1px solid var(--border-color); margin-top: 5px; white-space: pre-wrap; max-height: 120px; overflow-y: auto;"></p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="agree-btn" style="background: var(--white); color: var(--black);" onclick="closeReview()">Edit</button>
+                <button class="agree-btn" onclick="confirmBooking()">Confirm & Book</button>
+            </div>
+        </div>
+    </div>
+
     <div id="confirmation-modal">
         <div class="disclaimer-content" style="max-width: 500px; text-align: center;">
             <h2>Appointment Booked</h2>
             <p style="margin-bottom: 25px;">The appointment is booked and would be communicated to you via the phone no. given.</p>
             <button class="agree-btn" onclick="closeConfirmation()">Close</button>
+        </div>
+    </div>
+
+    <div id="otp-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+        <div class="disclaimer-content" style="max-width: 500px; text-align: center;">
+            <h2>Enter Verification Code</h2>
+            <p style="margin-bottom: 15px;">A 4-digit verification code has been sent to your email address. Please enter it below to confirm your booking.</p>
+            <div class="form-group">
+                <input type="text" id="user-otp-input" placeholder="Enter 4-Digit Code" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+            </div>
+            <button class="agree-btn" onclick="verifyOTP()">Verify & Confirm</button>
         </div>
     </div>
 
@@ -100,7 +128,17 @@
                 </div>
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" placeholder="Enter 10-digit number" pattern="[0-9]{9,15}" title="Please enter a valid phone number" required>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="country-code" style="padding: 12px; border: 1px solid var(--border-color); font-family: var(--font-body); font-size: 0.95rem; color: var(--dark-gray); background: var(--white); width: 90px;" required>
+                            <option value="+91" selected>+91</option>
+                            <option value="+1">+1</option>
+                            <option value="+44">+44</option>
+                            <option value="+61">+61</option>
+                            <option value="+971">+971</option>
+                            <option value="+65">+65</option>
+                        </select>
+                        <input type="tel" id="phone" style="flex: 1; min-width: 0;" placeholder="Enter 10-digit number" pattern="[0-9]{9,15}" title="Please enter a valid phone number" required>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="message">Brief Description of Matter</label>
@@ -115,7 +153,18 @@
         <p>&copy; 2026 Ritisha Mathur, Advocate. All Rights Reserved.</p>
     </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <script>
+        // Initialize EmailJS with your Public Key
+        // CRITICAL: Replace "YOUR_PUBLIC_KEY" with the key from your EmailJS Account
+        emailjs.init({
+          publicKey: "IFY53T3g2b-pf--cX",
+        });
+
+        let currentBookingData = {};
+        let generatedOTP = "";
+
         window.onload = function() {
             if (!sessionStorage.getItem('disclaimerAccepted')) {
                 document.getElementById('disclaimer-modal').style.display = 'flex';
@@ -133,13 +182,109 @@
 
         function handleFormSubmit(event) {
             event.preventDefault();
-            document.getElementById('confirmation-modal').style.display = 'flex';
+            
+            currentBookingData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('country-code').value + ' ' + document.getElementById('phone').value,
+                message: document.getElementById('message').value
+            };
+            
+            document.getElementById('review-name').textContent = currentBookingData.name;
+            document.getElementById('review-email').textContent = currentBookingData.email;
+            document.getElementById('review-phone').textContent = currentBookingData.phone;
+            document.getElementById('review-message').textContent = currentBookingData.message;
+            
+            document.getElementById('review-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
+        }
+
+        function closeReview() {
+            document.getElementById('review-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        async function confirmBooking() {
+            const confirmBtn = document.querySelector('#review-modal .agree-btn:nth-child(2)');
+            confirmBtn.innerText = "Sending Code...";
+            confirmBtn.disabled = true;
+
+            // Generate random 4-digit token code
+            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // Setup parameters matching the variables inside your EmailJS template
+            const templateParams = {
+                client_name: currentBookingData.name,
+                client_email: currentBookingData.email, // Sends directly to the client
+                otp_code: generatedOTP
+            };
+
+            try {
+                // Send the email completely free via EmailJS
+                // CRITICAL: Replace "YOUR_SERVICE_ID" and "YOUR_TEMPLATE_ID"
+                const response = await emailjs.send('service_0acmy5g', 'template_kdz5zcg', templateParams);
+
+                if (response.status === 200) {
+                    document.getElementById('review-modal').style.display = 'none';
+                    document.getElementById('otp-modal').style.display = 'flex';
+                } else {
+                    alert("Failed to send verification code.");
+                }
+            } catch (error) {
+                console.error("EmailJS Error:", error);
+                alert("Could not reach the free email platform layout.");
+            } finally {
+                confirmBtn.innerText = "Confirm & Book";
+                confirmBtn.disabled = false;
+            }
+        }
+
+        function verifyOTP() {
+            const enteredCode = document.getElementById('user-otp-input').value.trim();
+
+            if (enteredCode === generatedOTP) {
+                document.getElementById('otp-modal').style.display = 'none';
+                sendConsultationDataToAdmin();
+            } else {
+                alert("The entered verification code is incorrect. Please try again.");
+            }
+        }
+
+        async function sendConsultationDataToAdmin() {
+            // Send the final summary data to YOUR inbox using a second EmailJS template, 
+            // or keep using your free Web3Forms endpoint key below since Web3Forms alerts YOU for free!
+            const adminPayload = {
+                access_key: "6a34d81f-bad6-4835-9787-05a3a4a1ef9f", 
+                subject: "New Verified Booking: " + currentBookingData.name,
+                "Client Name": currentBookingData.name,
+                "Client Email": currentBookingData.email,
+                "Phone Number": currentBookingData.phone,
+                "Matter Description": currentBookingData.message,
+                "Verification Status": "Passed (OTP Email Verified)"
+            };
+
+            try {
+                const response = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(adminPayload)
+                });
+
+                if (response.ok) {
+                    document.getElementById('confirmation-modal').style.display = 'flex';
+                } else {
+                    alert("OTP verified, but logging configuration failed.");
+                }
+            } catch (error) {
+                console.error("Admin Alert Error:", error);
+                alert("Failed to securely compile the data.");
+            }
         }
 
         function closeConfirmation() {
             document.getElementById('confirmation-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
+            document.getElementById('user-otp-input').value = ""; 
             document.getElementById('appointment-form').reset();
         }
     </script>
