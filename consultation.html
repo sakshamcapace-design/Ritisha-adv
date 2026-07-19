@@ -162,12 +162,10 @@
         <p>&copy; 2026 Ritisha Mathur, Advocate. All Rights Reserved.</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="config.js"></script>
-
-    <script>
+   <script>
+        // FIXED: Properly pointing to the APP_CONFIG object from your config.js file
         emailjs.init({
-            publicKey: EMAILJS_PUBLIC_KEY,
+            publicKey: APP_CONFIG.EMAILJS_PUBLIC_KEY,
         });
 
         let currentBookingData = {};
@@ -253,7 +251,8 @@
             };
 
             try {
-                const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+                // FIXED: Pointing to APP_CONFIG
+                const response = await emailjs.send(APP_CONFIG.EMAILJS_SERVICE_ID, APP_CONFIG.EMAILJS_TEMPLATE_ID, templateParams);
 
                 if (response.status === 200) {
                     document.getElementById('review-modal').style.display = 'none';
@@ -283,7 +282,7 @@
 
         async function sendConsultationDataToAdmin() {
             const adminPayload = {
-                access_key: WEB3FORMS_KEY, // Fixed trailing quotation mark syntax error here!
+                access_key: APP_CONFIG.WEB3FORMS_KEY, // FIXED: Pointing to APP_CONFIG
                 subject: "New Verified Booking: " + currentBookingData.name,
                 "Client Name": currentBookingData.name,
                 "Client Email": currentBookingData.email,
