@@ -63,7 +63,10 @@
                 <li>The user wishes to gain more information about Advocate Ritisha Mathur for their own use.</li>
                 <li>The information is provided solely at the user's request and volition.</li>
             </ul>
-            <button class="agree-btn" onclick="acceptDisclaimer()">I Agree</button>
+            <div style="display: flex; gap: 15px;">
+                <button class="agree-btn" onclick="acceptDisclaimer()">I Agree</button>
+                <button class="agree-btn" style="background: var(--white); color: var(--black);" onclick="rejectDisclaimer()">I Do Not Agree</button>
+            </div>
         </div>
     </div>
 
@@ -144,6 +147,12 @@
                     <label for="message">Brief Description of Matter</label>
                     <textarea id="message" rows="4" placeholder="How can we assist you?" required></textarea>
                 </div>
+                
+                <div class="form-group" style="background: var(--light-gray); padding: 15px; border: 1px solid var(--border-color);">
+                    <label id="captcha-label" for="captcha-input">Security Check:</label>
+                    <input type="text" id="captcha-input" placeholder="Enter the answer" required>
+                </div>
+
                 <button type="submit" class="agree-btn">Book Appointment</button>
             </form>
         </div>
@@ -153,21 +162,31 @@
         <p>&copy; 2026 Ritisha Mathur, Advocate. All Rights Reserved.</p>
     </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="config.js"></script>
 
     <script>
-        // Initialize EmailJS with your Public Key
-        // CRITICAL: Replace "YOUR_PUBLIC_KEY" with the key from your EmailJS Account
         emailjs.init({
-          publicKey: EMAILJS_PUBLIC_KEY,
+            publicKey: EMAILJS_PUBLIC_KEY,
         });
 
         let currentBookingData = {};
         let generatedOTP = "";
+        let captchaAnswer = 0; // Stores the active captcha answer
+
+        // CAPTCHA Generator Function
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            captchaAnswer = num1 + num2;
+            document.getElementById('captcha-label').innerText = `Security Check: What is ${num1} + ${num2}?`;
+            document.getElementById('captcha-input').value = '';
+        }
 
         window.onload = function() {
+            // Generate the first CAPTCHA on page load
+            generateCaptcha();
+
             if (!sessionStorage.getItem('disclaimerAccepted')) {
                 document.getElementById('disclaimer-modal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -182,8 +201,22 @@
             document.body.style.overflow = 'auto';
         }
 
+        function rejectDisclaimer() {
+            // Replaces the entire page with a simple access denied message
+            document.body.innerHTML = '<div style="display: flex; height: 100vh; justify-content: center; align-items: center; text-align: center; padding: 20px;"><div><h1 style="margin-bottom: 20px;">Access Denied</h1><p>You must agree to the Bar Council of India disclaimer to view this website.</p></div></div>';
+            document.body.style.overflow = 'hidden';
+        }
+
         function handleFormSubmit(event) {
             event.preventDefault();
+            
+            // Validate the CAPTCHA before doing anything else
+            const userAnswer = parseInt(document.getElementById('captcha-input').value);
+            if (userAnswer !== captchaAnswer) {
+                alert("Incorrect security CAPTCHA answer. Please try again.");
+                generateCaptcha(); // Generate a new one to prevent spamming the old one
+                return;
+            }
             
             currentBookingData = {
                 name: document.getElementById('name').value,
@@ -211,19 +244,15 @@
             confirmBtn.innerText = "Sending Code...";
             confirmBtn.disabled = true;
 
-            // Generate random 4-digit token code
             generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-            // Setup parameters matching the variables inside your EmailJS template
             const templateParams = {
                 client_name: currentBookingData.name,
-                client_email: currentBookingData.email, // Sends directly to the client
+                client_email: currentBookingData.email, 
                 otp_code: generatedOTP
             };
 
             try {
-                // Send the email completely free via EmailJS
-                // CRITICAL: Replace "YOUR_SERVICE_ID" and "YOUR_TEMPLATE_ID"
                 const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
 
                 if (response.status === 200) {
@@ -253,10 +282,8 @@
         }
 
         async function sendConsultationDataToAdmin() {
-            // Send the final summary data to YOUR inbox using a second EmailJS template, 
-            // or keep using your free Web3Forms endpoint key below since Web3Forms alerts YOU for free!
             const adminPayload = {
-                access_key: WEB3FORMS_KEY", 
+                access_key: WEB3FORMS_KEY, // Fixed trailing quotation mark syntax error here!
                 subject: "New Verified Booking: " + currentBookingData.name,
                 "Client Name": currentBookingData.name,
                 "Client Email": currentBookingData.email,
@@ -288,6 +315,7 @@
             document.body.style.overflow = 'auto';
             document.getElementById('user-otp-input').value = ""; 
             document.getElementById('appointment-form').reset();
+            generateCaptcha(); // Generate a fresh CAPTCHA for the next person
         }
     </script>
 </body>
