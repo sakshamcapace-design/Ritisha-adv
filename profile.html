@@ -25,6 +25,10 @@
         .about-content { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
         .about-text p { margin-bottom: 1.5rem; text-align: justify; font-size: 1rem; }
         .about-image { background-color: var(--light-gray); height: 450px; display: flex; justify-content: center; align-items: center; color: var(--mid-gray); border: 1px solid var(--border-color); font-style: italic; }
+        
+        /* Ensures the injected portrait image preserves the existing box height and behaves responsively */
+        .about-image img { width: 100%; height: 100%; object-fit: cover; }
+
         footer { background: var(--black); color: var(--mid-gray); text-align: center; padding: 2rem; font-size: 0.8rem; }
     </style>
 </head>
@@ -48,7 +52,9 @@
                 <p>Drawing inspiration from a philosophy of precision, Ritisha's practice handles complex regulatory environments, high-stakes dispute resolutions, and corporate legal restructuring.</p>
                 <p>Operating primarily out of Delhi, she routinely appears before the Supreme Court of India, the Delhi High Court, and the National Company Law Tribunal (NCLT).</p>
             </div>
-            <div class="about-image">[ Insert Professional Grayscale Portrait Here ]</div>
+            <div class="about-image">
+                <img src="ritisha.png" alt="Advocate Ritisha Mathur Professional Portrait">
+            </div>
         </div>
     </section>
 
